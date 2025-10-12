@@ -1,0 +1,57 @@
+// To get started, press Ctrl+Space (or Option+Esc) to bring up the completion menu and view the available nodes.
+
+// You can also use the buttons in the sidebar to perform actions on nodes.
+// Actions currently available include:
+
+// * Enabling / disabling the node
+// * Adding the bus to a bus
+// * Removing the node
+// * Connecting ADC channels
+
+// For more help, browse the DeviceTree documentation at https://docs.zephyrproject.org/latest/guides/dts/index.html
+// You can also visit the nRF DeviceTree extension documentation at https://docs.nordicsemi.com/bundle/nrf-connect-vscode/page/guides/ncs_configure_app.html#devicetree-support-in-the-extension
+&pinctrl {
+	uart21_alt_default: uart21_alt_default {
+		group1 {
+			psels = <NRF_PSEL(UART_TX, 1, 4)>;
+		};
+
+		group2 {
+			psels = <NRF_PSEL(UART_RX, 1, 5)>;
+			bias-pull-up;
+		};
+	};
+
+	uart21_alt_sleep: uart21_alt_sleep {
+		group1 {
+			psels = <NRF_PSEL(UART_TX, 1, 4)>,
+				<NRF_PSEL(UART_RX, 1, 5)>;
+			low-power-enable;
+		};
+	};
+};
+
+&xiao_serial {
+	status = "okay";
+	current-speed = <115200>;
+	pinctrl-0 = <&uart21_alt_default>;
+	pinctrl-1 = <&uart21_alt_sleep>;
+	pinctrl-names = "default", "sleep";
+	presence_sensor: ld2412-sensor {
+		compatible = "hilink,ld2412-sensor";
+        status = "okay";
+	};
+};
+
+/ {
+	example_sensor: example-sensor {
+		compatible = "zephyr,example-sensor";
+		input-gpios = <&gpio1 1 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+	};
+
+	blink_led: blink-led {
+		compatible = "blink-gpio-led";
+		led-gpios = <&gpio2 9 GPIO_ACTIVE_HIGH>;
+		blink-period-ms = <1000>;
+	};
+};

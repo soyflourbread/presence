@@ -1,0 +1,11 @@
+description: |
+  Hi-Link LD2412 presence sensor, over UART.
+compatible: "hilink,ld2412-sensor"
+
+include: [sensor-device.yaml, uart-device.yaml]
+properties:
+  initial-string:
+    required: false
+    type: string
+    description: |
+      Initial string to be sent over uart. Can be changed during run-time.

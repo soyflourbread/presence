@@ -53,6 +53,8 @@ static DEVICE_API(sensor, example_sensor_api) = {
 
 static int example_sensor_init(const struct device *dev)
 {
+	LOG_ERR("Example sensor peripheral init");
+
 	const struct example_sensor_config *config = dev->config;
 
 	int ret;

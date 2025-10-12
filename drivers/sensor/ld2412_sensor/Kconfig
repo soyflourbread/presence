@@ -1,0 +1,49 @@
+menu "Hilink LD2412 presence sensor"
+
+config LD2412_SENSOR
+	bool "Enable Hilink LD2412 presence sensor"
+	depends on DT_HAS_HILINK_LD2412_SENSOR_ENABLED
+	help
+	  Enable Hilink LD2412 presence sensor
+
+if LD2412_SENSOR
+    config LD2412_SENSOR_THREAD_STACK_SIZE
+        int "thread stack size (bytes)"
+        default 512
+        range 512 2048
+        help
+            Size of UART RX buffer. Will be allocated for each device.
+
+    config LD2412_SENSOR_RX_BUF_SIZE
+        int "rx buffer size (bytes)"
+        default 128
+        range 0 2048
+        help
+            Size of UART RX DMA buffer. Will be allocated for each device.
+
+    config LD2412_SENSOR_UART_RING_BUF_SIZE
+        int "rx ring buffer size (bytes)"
+        default 1024
+        range 0 2048
+        help
+            Size of UART RX ring buffer. Will be allocated for each device.
+
+    config LD2412_SENSOR_FRAME_DATA_MAX_SIZE
+        int "frame data max size (bytes)"
+        default 256
+        range 0 2048
+        help
+            Max size of frame data.
+
+    config LD2412_SENSOR_GATE_NUM
+        int "number of gates supported by presence sensor"
+        default 14
+        range 1 14
+        help
+            Number of gates supported by presence sensor.
+
+    module = LD2412_SENSOR
+    module-str = Hilink LD2412 presence sensor
+    source "subsys/logging/Kconfig.template.log_config"
+endif
+endmenu

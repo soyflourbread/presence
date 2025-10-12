@@ -6,8 +6,10 @@
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/sensor.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/devicetree.h>
 
 #include <app/drivers/blink.h>
+#include <app/drivers/ld2412.h>
 
 #include <app_version.h>
 
@@ -15,6 +17,28 @@ LOG_MODULE_REGISTER(main, CONFIG_APP_LOG_LEVEL);
 
 #define BLINK_PERIOD_MS_STEP 100U
 #define BLINK_PERIOD_MS_MAX  1000U
+
+struct counter
+{
+    int strings;
+    int overflows;
+};
+
+static struct counter tracker = {0};
+
+void peripheral_callback(const struct device *dev, char *data, size_t length, bool is_string, void *user_data)
+{
+    struct counter *c = (struct counter *)user_data;
+    if (is_string)
+    {
+        printk("Recieved string \"%s\"\n", data);
+        c->strings++;
+    } else {
+        printk("Buffer full. Recieved fragment %.*s\n", length, data);
+        c->overflows++;
+    }
+    printk("Strings: %d\nOverflows: %d\n", c->strings, c->overflows);
+}
 
 int main(void)
 {
@@ -37,41 +61,9 @@ int main(void)
 		return 0;
 	}
 
-	ret = blink_off(blink);
-	if (ret < 0) {
-		LOG_ERR("Could not turn off LED (%d)", ret);
-		return 0;
-	}
-
-	printk("Use the sensor to change LED blinking period\n");
+	const struct device *dev = DEVICE_DT_GET(DT_NODELABEL(presence_sensor));
 
 	while (1) {
-		ret = sensor_sample_fetch(sensor);
-		if (ret < 0) {
-			LOG_ERR("Could not fetch sample (%d)", ret);
-			return 0;
-		}
-
-		ret = sensor_channel_get(sensor, SENSOR_CHAN_PROX, &val);
-		if (ret < 0) {
-			LOG_ERR("Could not get sample (%d)", ret);
-			return 0;
-		}
-
-		if ((last_val.val1 == 0) && (val.val1 == 1)) {
-			if (period_ms == 0U) {
-				period_ms = BLINK_PERIOD_MS_MAX;
-			} else {
-				period_ms -= BLINK_PERIOD_MS_STEP;
-			}
-
-			printk("Proximity detected, setting LED period to %u ms\n",
-			       period_ms);
-			blink_set_period_ms(blink, period_ms);
-		}
-
-		last_val = val;
-
 		k_sleep(K_MSEC(100));
 	}
 
